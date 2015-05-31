@@ -1,0 +1,285 @@
+__author__ = 'Stéphan GROULD'
+#=======================================================================================================================
+#                                     Importation des différentes librairies
+#=======================================================================================================================
+from tkinter import *
+import time
+import os
+import webbrowser
+import paramiko
+from tkinter.messagebox import *
+
+
+#=======================================================================================================================
+#                                      Création fenêtre et Connexion ssh
+#=======================================================================================================================
+
+Autorise = Tk()
+
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+#identifiants WiFi
+# car.isn ou 192.168.1.1
+
+def Connexion():
+    try:
+        ssh.connect('car.isn', username='pi', password='raspberry')
+        showinfo('Raspberry Projet ISN 2014-2015','La connexion à bien été établie')
+        showinfo('Raspberry Projet ISN 2014-2015','Test du fonctionnement des moteurs après l'' appuie sur OK')
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 out")
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 28 up && gpio mode 28 out")
+        time.sleep(0.2)
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 in")
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 28 up && gpio mode 28 in")
+        time.sleep(0.4)
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 out")
+        time.sleep(0.2)
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 in")
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 28 out")
+        time.sleep(0.2)
+        stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 28 in")
+        showinfo('Raspberry Projet ISN 2014-2015','Les moteurs sont opérationels \nVous pouvez accéder au contenu de l ''application')
+        Autorise.destroy()
+    except paramiko.SSHException:
+        print ("Connexion impossible")
+        showinfo('Raspberry Projet ISN 2014-2015','Connexion impossible au drone')
+        quit()
+# On lui attribue un titre
+
+Autorise.title('Raspberry Projet ISN 2014-2015')
+
+# On lui attribue une taille par défaut
+
+Autorise.geometry("1440x900")
+
+# Création d'un label permettant d'afficher du texte
+
+nom = Label(Autorise, text = 'Bonjour, et bienvenue\nVeuillez cliquer sur le bouton Connexion, pour vous connecter au drone\nMerci')
+nom.pack()
+
+Bouton = Button(Autorise, text ='Connexion', command = Connexion)
+Bouton.pack()
+
+Autorise.mainloop()
+
+#=======================================================================================================================
+#                                     Mise en place des différentes variables
+#=======================================================================================================================
+# Création d'une fonction "Verification" qui autorise l'accès au programme ou non
+
+def Verification():
+    if Motdepasse.get() == 'isn20142015':
+        # le mot de passe est bon : on affiche une boîte de dialogue puis on ferme la fenêtre
+        showinfo('Résultat','Mot de passe correct.\nVous pouvez accéder au contenu du programme !')
+        Identification.destroy()
+    else:
+        # le mot de passe est incorrect : on affiche une boîte de dialogue
+        showwarning('Résultat','Mot de passe incorrect.\nVeuillez recommencer !')
+        Motdepasse.set('')
+
+# Création d'une fonction qui permet d'afficher un temps de chargement qui est totalement faux mais pour faire stylé ;)
+
+def Applicationsuivante():
+    showinfo('Raspberry Projet ISN 2014-2015','Accès au programme en cours, \nMerci de patienter')
+    time.sleep(1)
+    showinfo('Raspberry Projet ISN 2014-2015','Le programme est chargé\nAmusez-vous bien !')
+    Fenetre.destroy()
+
+# Création d'une fonction qui lorsque l'on clique dessus nous permet de voir la Documentation
+
+def Documentation():
+    webbrowser.open('https://drive.google.com/open?id=0BxTQUnDDovCUeFJXSkhKRVVaem8&authuser=1')
+
+# Création d'une fonction qui lorsque l'on clique dessus permettra d'afficher une fenetre pour quitter le programme en
+# cours.
+
+def shutdown():
+    showinfo('Raspberry Projet ISN 2014-2015','Bye ;) \nA la prochaine !')
+    application.quit()
+
+
+# Création d'une variable appelée "spacedisk" qui nous permet de voir à combien de % est rempli notre disque.
+spacedisk=os.popen("df -h |grep /dev/root | cut -c 36-38", "r").read()
+temperature=os.popen("/opt/vc/bin/vcgencmd measure_temp | cut -c 6-11","r").read()
+
+def spaceupdate():
+    spacedisk=os.popen("df -h |grep /dev/root | cut -c 36-38", "r").read()
+    temperature=os.popen("/opt/vc/bin/vcgencmd measure_temp | cut -c 6-11", "r").read()
+
+# Création variable permettant de démarrer la vidéo
+
+def startvideo():
+    # On affiche un message
+    showinfo('Raspberry Projet ISN 2014-2015','La vidéo est en cours d enregistrement')
+
+# Création variable permettant l'enregistrement de la vidéo
+
+def startcamera():
+    # On affiche un message
+    showinfo('Raspberry Projet ISN 2014-2015','La caméra est bien démarrée !')
+
+# Création variable permettant la prise de phtographie
+
+def takephoto():
+    # On affiche un message
+    showinfo('Raspberry Projet ISN 2014-2015','La photo à bien été prise !')
+
+# Création variable permettant de faire avancer le robot
+
+def avant(event):
+
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 out")
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 28 up && gpio mode 28 out")
+
+    for line in stdout.readlines():
+            print (line.strip())
+    # On affiche un message
+    showinfo('Raspberry Projet ISN 2014-2015','On Avance !')
+
+# Création variable permettant d'arreter le robot
+
+def stop(event):
+
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 in")
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 28 up && gpio mode 28 in")
+
+    for line in stdout.readlines():
+            print (line.strip())
+    # On affiche un message
+    showinfo('Raspberry Projet ISN 2014-2015',"""On s'arrete !""")
+
+# Création variable permettant au robot de tourner à gauche
+
+def gauche(event):
+
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 out")
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 28 up && gpio mode 28 in")
+
+    for line in stdout.readlines():
+            print (line.strip())
+    # On affiche un message
+    showinfo('Raspberry Projet ISN 2014-2015','A Gauche toute !')
+
+# Création variable permettant au robot de tourner à droite
+
+def droite(event):
+
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 29 up && gpio mode 29 in")
+    stdin,stdout,stderr = ssh.exec_command("gpio mode 28 up && gpio mode 28 out")
+
+    for line in stdout.readlines():
+            print (line.strip())
+    # On affiche un message
+    showinfo('Raspberry Projet ISN 2014-2015','A Droite toute !')
+
+
+#=======================================================================================================================
+#                         Mise en place de la première fenêtre avec identification et text
+#=======================================================================================================================
+
+# Création de la fenêtre principale (main window)
+
+Identification = Tk()
+Identification.title('Identification requise')
+
+# On choisi la taille de la fenêtre
+
+Identification.geometry("1440x900")
+Identification.configure(background='grey')
+
+# Création d'un widget Label texte
+
+Label1 = Label(Identification, text= 'Bonjour !\nVeuillez entrer le mot de passe pour pouvoir accéder au contenu de '
+                                     'l application\n si vous ne connaissez pas le mot de passe veuillez vous referrer '
+                                     'à la documention\nMerci')
+Label1.pack()
+
+# Création d'un widget Label (texte 'Mot de passe')
+
+Label2 = Label(Identification, text = 'Mot de passe :')
+Label2.pack()
+
+# Création d'un widget Entry (champ de saisie)
+
+Motdepasse= StringVar()
+Champ = Entry(Identification, textvariable= Motdepasse, show='*', bg ='bisque', fg='maroon')
+Champ.focus_set()
+Champ.pack(pady = 5)
+
+# Création d'un widget Button (bouton Valider)
+
+Bouton = Button(Identification, text ='Valider', command = Verification)
+Bouton.pack(padx = 5, pady = 5)
+
+#Création d'un bouton pour accéder à la documentation du logiciel
+
+Bouton2 = Button(Identification, text='Documentation', command = Documentation)
+Bouton2.pack()
+
+# Fermeture de la fenetre
+
+Identification.mainloop()
+
+#=======================================================================================================================
+#                           Création d'une nouvelle fenêtre permettant l'accès au programme
+#=======================================================================================================================
+
+# On creer une nouvelle fenetre apellée "application"
+
+application = Tk()
+application.bind('<Up>', avant)
+application.bind('<Down>', stop)
+application.bind('<Left>', gauche)
+application.bind('<Right>', droite)
+application.title("Raspberry Projet ISN 2014-2015")
+application.geometry("1440x900")
+
+frame1 = LabelFrame(application, borderwidth=5)
+frame1.pack(side=RIGHT, fill=Y)
+
+# il reste la cavité sur la gauche...
+
+frame2 = LabelFrame(application, borderwidth= 5, width=128, height=720)
+frame2.pack(side=TOP, fill=X)
+
+# il reste une cavité en bas à gauche...
+
+frame3 = LabelFrame(application, borderwidth=5, height=31)
+frame3.pack(side=BOTTOM, fill=BOTH, expand=1)
+
+# Importation des différentes photographies (LOGO) et ensuite les insérées dans une variable
+
+Logo = PhotoImage(file= 'Photos/logo1.gif')
+flechegauche = PhotoImage(file= 'Photos/Gauche.gif')
+flechedroite = PhotoImage(file= 'Photos/Droite.gif')
+flecheavant = PhotoImage(file= 'Photos/Avant.gif')
+flechearrière = PhotoImage(file= 'Photos/Stop.gif')
+
+# Création de différents label qui permettent d'afficher du texte, ainsi que de réaliser des opérations lorsque l'on
+# clique dessus
+
+lab1 = Label(frame1, text="Niveau Batterie      :").grid(row=0,column=0,sticky=W)
+lab2 = Label(frame1, text="Portée du WiFi       :").grid(row=1,column=0,sticky=W)
+lab3 = Label(frame1, text="Espace Disponible : " + spacedisk).grid(row=2,column=0,sticky=W)
+lab13 = Label(frame1, text="Température CPU  :"+ temperature).grid(row=3, column=0,sticky=W)
+lab11 = Button(frame1, text="Actualiser", command=spaceupdate).grid(row=4, column=0,sticky=W+E+N+S)
+lab12 = Label(frame1, text=" \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n").grid(row=5, column=0)
+lab4 = Label(frame1, image=Logo).grid(row=6,column=0)
+Bouton = Button(frame1, text ='Quitter l application', command = shutdown).grid(row=7,column=0, sticky=W+E+N+S)
+lab5 = Label(frame3, width=125).grid(row=0,column=4)
+lab6 = Button(frame3, text='Démarrer la caméra', command=startcamera, width=17).grid(row=0, column=5, sticky=W+E+N+S)
+lab7 = Button(frame3, text='Prendre un photo', command=takephoto, width=17).grid(row=1, column=5, sticky=W+E+N+S)
+lab9 = Button(frame3, text='Enregistrer la vidéo', command= startvideo, width=17).grid(row=0, column=6, sticky=W+E+N+S)
+lab10 = Button(frame3, image=flechegauche, width=25, height=25, command=gauche).grid(row=1,column=1)
+lab11 = Button(frame3, image=flechedroite, width=25, height=25, command=droite).grid(row=1,column=3)
+lab12 = Button(frame3, image=flecheavant, width=25, height=25, command=avant).grid(row=0,column=2)
+lab13 = Button(frame3, image=flechearrière, width=25, height=25, command=stop).grid(row=1,column=2)
+
+#On ferme la fenêtre
+
+application.mainloop()
+
+# On ferme la connexion SSH
+
+ssh.close()
