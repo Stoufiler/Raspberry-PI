@@ -1,0 +1,11 @@
+import time
+import picamera
+
+with picamera.PiCamera() as camera:
+    name = time.strftime("%A %d %B %Y %H:%M:%S") + ".jpg"
+	# date au moment de la photo
+    camera.resolution = (1280, 720)
+    camera.start_preview()
+    time.sleep(2)
+    camera.capture(name)
+	# la date devient le nom de l'image 
