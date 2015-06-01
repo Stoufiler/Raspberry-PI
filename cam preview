@@ -1,0 +1,11 @@
+import time
+import picamera
+ 
+camera = picamera.PiCamera()
+try:
+    camera.start_preview()
+    time.sleep(10)
+    # preview de 10secondes
+    camera.stop_preview()
+finally:
+    camera.close()
